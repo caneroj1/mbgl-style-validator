@@ -1,0 +1,4 @@
+{
+  "hoogle-vscode.useCabalDependencies": true,
+  "hoogle-vscode.maxResults": 20
+}
