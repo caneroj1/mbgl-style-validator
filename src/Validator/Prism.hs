@@ -27,6 +27,15 @@ version o = o ^. at "version"
 name :: JSON -> Maybe Value
 name o = o ^. at "name"
 
+center :: JSON -> Maybe Value
+center o = o ^. at "center"
+
+zoom :: JSON -> Maybe Value
+zoom o = o ^. at "zoom"
+
+isDouble :: Value -> Maybe Double
+isDouble o = o ^? _Number . _Double
+
 toLngLat :: Value -> Maybe LngLat
 toLngLat v = v ^? lnglat
 
@@ -38,5 +47,3 @@ lnglat = prism' toJSON fromArray
         v ^? _Array . ix 0 . lng <*>
         v ^? _Array . ix 1 . lat
 
-center :: JSON -> Maybe Value
-center o = o ^. at "center"

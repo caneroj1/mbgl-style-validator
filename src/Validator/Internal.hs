@@ -40,6 +40,7 @@ validateRoot :: Validator JSON ()
 validateRoot = checkVersion
             >> checkName
             >> checkCenter
+            >> checkZoom
 
 checkVersion :: Validator JSON ()
 checkVersion = asks version
@@ -61,3 +62,8 @@ checkCenter :: Validator JSON ()
 checkCenter = asks center >>= maybe nothing checkCoords
   where checkCoords = maybe notValidLngLat (const nothing) . toLngLat
         notValidLngLat = tell $ err "'center' is not a valid lnglat pair"
+
+checkZoom :: Validator JSON ()
+checkZoom = asks zoom >>= maybe nothing checkZoomLevel
+  where checkZoomLevel = maybe notValidDouble (const nothing) . isDouble
+        notValidDouble = tell $ err "'zoom' is not a valid zoom level"
