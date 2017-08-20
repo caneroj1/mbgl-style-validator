@@ -2,7 +2,12 @@
 
 module Validator.Utility where
 
+import           Control.Lens
+import           Control.Lens.Prism
 import           Control.Monad.RWS.Lazy
+import           Data.Aeson
+import           Data.Aeson.Lens
+import           Data.Scientific
 import qualified Data.Sequence          as Seq
 import           Data.Text              (Text)
 import qualified Data.Text              as T hiding (Text)

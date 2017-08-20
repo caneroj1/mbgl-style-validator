@@ -6,6 +6,7 @@ import           Control.Lens
 import           Control.Lens.Prism
 import           Data.Aeson
 import           Data.Aeson.Lens
+import           Data.Aeson.Types
 import           Data.Text
 import qualified Data.Vector        as V
 import           Validator.Types
@@ -13,10 +14,13 @@ import           Validator.Utility
 import           Validator.Values
 
 lng :: Prism' Value Lng
-lng = prism' toJSON (\v -> toLng =<< v ^? _Number . _Double)
+lng = prism' toJSON (parseMaybe parseJSON)
 
 lat :: Prism' Value Lat
-lat = prism' toJSON (\v -> toLat =<< v ^? _Number . _Double)
+lat = prism' toJSON (parseMaybe parseJSON)
+
+lnglat :: Prism' Value LngLat
+lnglat = prism' toJSON (parseMaybe parseJSON)
 
 rightVersion :: Value -> Maybe ()
 rightVersion o = o ^? _Number . _Integer . only mbglVersion
@@ -33,17 +37,14 @@ center o = o ^. at "center"
 zoom :: JSON -> Maybe Value
 zoom o = o ^. at "zoom"
 
+bearing :: JSON -> Maybe Value
+bearing o = o ^. at "bearing"
+
+pitch :: JSON -> Maybe Value
+pitch o = o ^. at "pitch"
+
 isDouble :: Value -> Maybe Double
 isDouble o = o ^? _Number . _Double
 
 toLngLat :: Value -> Maybe LngLat
 toLngLat v = v ^? lnglat
-
-lnglat :: Prism' Value LngLat
-lnglat = prism' toJSON fromArray
-  where
-    fromArray v =
-      LngLat <$>
-        v ^? _Array . ix 0 . lng <*>
-        v ^? _Array . ix 1 . lat
-
