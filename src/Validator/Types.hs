@@ -2,7 +2,7 @@
 
 module Validator.Types where
 
-import           Control.Lens
+import           Control.Lens           hiding (Zoom)
 import           Control.Lens.Prism
 import           Control.Monad
 import           Control.Monad.RWS.Lazy
@@ -15,8 +15,11 @@ import           Data.Sequence          (Seq)
 import           Data.Text
 import           Validator.Values
 
-fromNumber :: (Bounded a, RealFloat a) => Value -> Maybe a
-fromNumber v = either (const Nothing) Just . toBoundedRealFloat =<< v ^? _Number
+asBoundedDouble :: (Bounded a, RealFloat a) => Value -> Maybe a
+asBoundedDouble v = either (const Nothing) Just . toBoundedRealFloat =<< v ^? _Number
+
+asBoundedInt :: (Bounded a, Integral a) => Value -> Maybe a
+asBoundedInt v = toBoundedInteger =<< v ^? _Number
 
 maybeToParser :: Maybe a -> Parser a
 maybeToParser = maybe mzero return
@@ -53,7 +56,7 @@ instance Bounded Lng where
   maxBound = Lng maxLng
 
 instance FromJSON Lng where
-  parseJSON = maybeToParser . fromNumber
+  parseJSON = maybeToParser . asBoundedDouble
 
 newtype Lat = Lat Double
   deriving (Show, Eq, Ord, Fractional, Num, Real, RealFrac, Floating, RealFloat)
@@ -66,7 +69,7 @@ instance Bounded Lat where
   maxBound = Lat maxLat
 
 instance FromJSON Lat where
-  parseJSON = maybeToParser . fromNumber
+  parseJSON = maybeToParser . asBoundedDouble
 
 data LngLat = LngLat Lng Lat
 
@@ -76,8 +79,8 @@ instance ToJSON LngLat where
 instance FromJSON LngLat where
   parseJSON v =
     LngLat <$>
-      maybeToParser (fromNumber =<< (v ^? _Array . ix 0)) <*>
-      maybeToParser (fromNumber =<< (v ^? _Array . ix 1))
+      maybeToParser (asBoundedDouble =<< (v ^? _Array . ix 0)) <*>
+      maybeToParser (asBoundedDouble =<< (v ^? _Array . ix 1))
 
 newtype Bearing = Bearing Double
   deriving (Show, Eq, Ord, Fractional, Num, Real, RealFrac, Floating, RealFloat)
@@ -90,7 +93,7 @@ instance Bounded Bearing where
   maxBound = Bearing maxBearing
 
 instance FromJSON Bearing where
-  parseJSON = maybeToParser . fromNumber
+  parseJSON = maybeToParser . asBoundedDouble
 
 newtype Pitch = Pitch Double
   deriving (Show, Eq, Ord, Fractional, Num, Real, RealFrac, Floating, RealFloat)
@@ -103,4 +106,17 @@ instance Bounded Pitch where
   maxBound = Pitch maxPitch
 
 instance FromJSON Pitch where
-  parseJSON = maybeToParser . fromNumber
+  parseJSON = maybeToParser . asBoundedDouble
+
+newtype Zoom = Zoom Integer
+  deriving (Show, Eq, Ord, Integral, Num, Real, Enum)
+
+instance ToJSON Zoom where
+  toJSON (Zoom z) = toJSON z
+
+instance Bounded Zoom where
+  minBound = Zoom minZoom
+  maxBound = Zoom maxZoom
+
+instance FromJSON Zoom where
+  parseJSON = maybeToParser . asBoundedInt

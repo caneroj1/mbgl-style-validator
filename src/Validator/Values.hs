@@ -16,3 +16,7 @@ maxBearing = 360
 minPitch, maxPitch :: Double
 minPitch = 0
 maxPitch = 60
+
+minZoom, maxZoom :: Integer
+minZoom = 0
+maxZoom = 20

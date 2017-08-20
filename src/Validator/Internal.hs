@@ -41,6 +41,8 @@ validateRoot = checkVersion
             >> checkName
             >> checkCenter
             >> checkZoom
+            >> checkBearing
+            >> checkPitch
 
 checkVersion :: Validator JSON ()
 checkVersion = asks version
@@ -65,5 +67,16 @@ checkCenter = asks center >>= maybe nothing checkCoords
 
 checkZoom :: Validator JSON ()
 checkZoom = asks zoom >>= maybe nothing checkZoomLevel
-  where checkZoomLevel = maybe notValidDouble (const nothing) . isDouble
-        notValidDouble = tell $ err "'zoom' is not a valid zoom level"
+  where checkZoomLevel = maybe notValidZoom (const nothing) . isZoom
+        notValidZoom = tell $ err "'zoom' is not a valid zoom level"
+
+checkBearing :: Validator JSON ()
+checkBearing = asks bearing >>= maybe nothing checkBearingDeg
+  where checkBearingDeg = maybe notValidBearing (const nothing) . isBearing
+        notValidBearing = tell $ err "'bearing' is not valid a bearing value"
+
+checkPitch :: Validator JSON ()
+checkPitch = asks pitch >>= maybe nothing checkPitchDeg
+  where checkPitchDeg = maybe notValidPitch (const nothing) . isPitch
+        notValidPitch = tell $ err "'pitch' is not a valid pitch value"
+
